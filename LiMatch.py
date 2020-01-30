@@ -60,7 +60,7 @@ def on_closing():
     filename='Labeled_'+ now.strftime("%H:%M_%m%d%Y") +'.csv'
     df.to_csv(filename, index=False, sep=";")
     print(filename, '--> Criado com sucesso!')
-    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+    if messagebox.askokcancel("Sair", "Tem certeza que deseja Sair?"):
         root.destroy()
 
 def window(main):
@@ -93,10 +93,26 @@ def LoadImage(path,dim):
     image = ImageTk.PhotoImage(image)
     return image
 
+def CreatePanel(root,image,panel_x,panel_y,texto,legend_x,legend_y):
+    # Storing image
+    panel_default = Label(image=image, borderwidth=2, relief="solid")
+    panel_default.image = image
+    panel_default.pack(padx=10, pady=10)
+    panel_default.place(x=panel_x, y=panel_y)
+    # Setting legend
+    legenda = StringVar()
+    legenda.set(texto)
+    legend_panel_default = Label(root, textvariable=legenda, font=('Helvetica', '14'))
+    legend_panel_default.place(x=legend_x, y=legend_y)
+
+
+
 '''Path dos modelos'''
 path_ModeloLiso = "/home/ellen/Imagens/Modelos/lemonMaduro.jpg"
 path_ModeloRugoso = "/home/ellen/Imagens/Modelos/lemonVerde.jpg"
 
+path_ModeloLisoDefeito = "/home/ellen/Imagens/Modelos/lemonMaduro.jpg"
+path_ModeloRugosoDefeito = "/home/ellen/Imagens/Modelos/lemonVerde.jpg"
 ''' Path das Limas '''
 # Test for end of sample's list
 #path_train = "/home/ellen/Imagens/Modelos/"
@@ -109,12 +125,14 @@ root = Tk()
 #Defining resolution for my program  based in screen resolution
 window(root)
 #Setting new global  panels to store  images
-global panel_ModeloLiso, panel_ModeloRugoso, panel_Lima
+global panel_ModeloLiso, panel_ModeloRugoso, panel_ModeloLisoDefeito, panel_ModeloRugosoDefeito,panel_Lima
 global amostras,index_lima,nome_lima,Rotulo,Sample
 Rotulo=[]
 Sample=[]
 panel_ModeloLiso = None
 panel_ModeloRugoso = None
+panel_ModeloLisoDefeito = None
+panel_ModeloRugosoDefeito = None
 panel_Lima =  None
 
 '''Inicializacao de variaveis'''
@@ -136,28 +154,19 @@ if len(path_ModeloLiso ) > 0 and len(path_ModeloRugoso)>0:
         '''Model image - Rugoso'''
         # load the image from disk
         image_Rugoso= LoadImage(path_ModeloRugoso,(400,400))
-
+        '''Model image - Liso Defeito'''
+        image_LisoDefeito = LoadImage(path_ModeloLisoDefeito, (400, 400))
+        '''Model image - Rugoso Defeito'''
+        # load the image from disk
+        image_RugosoDefeito = LoadImage(path_ModeloRugosoDefeito, (400, 400))
         '''Model image - Lima'''
         # load the image from disk
         image_Lima = LoadImage(path_ModeloLima,(600,600))
 
-        # if the panels are None, initialize them
-        #Storing image
-        panel_ModeloLiso = Label(image=image_Liso,borderwidth=2, relief="solid")
-        panel_ModeloLiso.image = image_Liso
-        panel_ModeloLiso.pack(padx=10, pady=10)
-        panel_ModeloLiso.place(x=150,y=100)
-        #Setting legend
-        legend_ModeloLiso= Label(root, text="LISO",font=('Helvetica', '14'))
-        legend_ModeloLiso.place(x=325,y=90)
-        #Storing image
-        panel_ModeloRugoso = Label(image=image_Rugoso,borderwidth=2, relief="solid")
-        panel_ModeloRugoso.image = image_Rugoso
-        panel_ModeloRugoso.pack(padx=10, pady=10)
-        panel_ModeloRugoso.place(x=1250, y=100)
-        #Setting legend
-        legend_ModeloRugoso= Label(root, text="RUGOSO",font=('Helvetica', '14'))
-        legend_ModeloRugoso.place(x=1400,y=90)
+        CreatePanel(root, image_Liso, 150, 50, 'LISO - SEM DEFEITO', 255, 40)
+        CreatePanel(root, image_Rugoso, 1250, 50, 'RUGOSO - SEM DEFEITO', 1350, 40)
+        CreatePanel(root,image_LisoDefeito,150,550,'LISO - COM DEFEITO',255,540)
+        CreatePanel(root, image_RugosoDefeito, 1250, 550, 'RUGOSO - COM DEFEITO', 1350, 540)
         # Storing image
         panel_Lima = Label(image=image_Lima,borderwidth=6, relief="solid")
         panel_Lima.image = image_Lima
@@ -187,5 +196,6 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 
 
-
-
+#TODO -> Procurar por um metodo on opening e ver a possibilidade de ler o arquivo e remover  do processo de rotulacao as imagens contidas no arquivo
+#TODO -> Colocar as figuras com acoes de click feito os Botoes  e incluir os contadores e classificadores dos com defeito
+#TODO -> Alterar os caminhos dos COM DEFEITO para aponta para fotos reais
