@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter import filedialog
 import tkinter.font as font
 from PIL import Image
 from PIL import ImageTk
@@ -54,14 +55,13 @@ def label_rugoso():
 
 
 def on_closing():
-    raw_data = {'Sample': Sample, 'Rotulo': Rotulo}
-    df = pd.DataFrame(raw_data,columns=['Sample', 'Rotulo'])
-    now = datetime.now()
-    filename='Labeled_'+ now.strftime("%H:%M_%m%d%Y") +'.csv'
-    df.to_csv(filename, index=False, sep=";")
-    print(filename, '--> Criado com sucesso!')
-    if messagebox.askokcancel("Sair", "Tem certeza que deseja Sair?"):
-        root.destroy()
+    global arquivo_salvo
+    if arquivo_salvo==1:
+            root.destroy()
+    else:
+        if messagebox.askokcancel("Sair", "Tem certeza que deseja Sair sem salvar?"):
+            root.destroy()
+
 
 def window(main):
     main.title('LiMatch')
@@ -105,6 +105,25 @@ def CreatePanel(root,image,panel_x,panel_y,texto,legend_x,legend_y):
     legend_panel_default = Label(root, textvariable=legenda, font=('Helvetica', '14'))
     legend_panel_default.place(x=legend_x, y=legend_y)
 
+def LoadPreviousLabeledFile():
+    filename = filedialog.askopenfilename( title = "Selecione o arquivo com a rotulacao",filetypes = (("CSV Files","*.csv"),))
+    try:
+        labeled_list= pd.read_csv(filename)
+    except:
+       messagebox.showerror(title='Erro ao carregar', message='Nao foi possivel carregar arquivo')
+
+    print(filename)
+def SaveLabeledFile():
+    raw_data = {'Sample': Sample, 'Rotulo': Rotulo}
+    df = pd.DataFrame(raw_data, columns=['Sample', 'Rotulo'])
+    filename = filedialog.asksaveasfilename( defaultextension='.csv')
+    try:
+        df.to_csv(filename, index=False, sep=";")
+        arquivo_salvo=1;
+        print(filename, '--> Criado com sucesso!')
+    except:
+       messagebox.showerror(title='Erro ao salvar', message='Nao foi possivel salvar')
+
 
 
 '''Path dos modelos'''
@@ -122,11 +141,22 @@ path_train = "/home/ellen/Imagens/TRAIN1200-1200_SEMLABEL"
 '''Construcao GUI'''
 #Creating the GUI interface
 root = Tk()
+#Creating a menubar to display an option to load previous labeled
+menubar = Menu(root)
+filemenu = Menu(menubar, tearoff=0)
+filemenu.add_command(label="Carregar arquivo...", command=LoadPreviousLabeledFile)
+filemenu.add_command(label="Salvar arquivo...", command=SaveLabeledFile)
+filemenu.add_separator()
+filemenu.add_command(label="Sair", command=on_closing)
+menubar.add_cascade(label="Menu", menu=filemenu)
+
+root.config(menu=menubar)
 #Defining resolution for my program  based in screen resolution
 window(root)
 #Setting new global  panels to store  images
 global panel_ModeloLiso, panel_ModeloRugoso, panel_ModeloLisoDefeito, panel_ModeloRugosoDefeito,panel_Lima
-global amostras,index_lima,nome_lima,Rotulo,Sample
+global amostras,index_lima,nome_lima,Rotulo,Sample,arquivo_salvo
+
 Rotulo=[]
 Sample=[]
 panel_ModeloLiso = None
@@ -134,7 +164,7 @@ panel_ModeloRugoso = None
 panel_ModeloLisoDefeito = None
 panel_ModeloRugosoDefeito = None
 panel_Lima =  None
-
+arquivo_salvo=0
 '''Inicializacao de variaveis'''
 liso=0
 rugoso=0
@@ -196,6 +226,6 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 
 
-#TODO -> Procurar por um metodo on opening e ver a possibilidade de ler o arquivo e remover  do processo de rotulacao as imagens contidas no arquivo
+#TODO -> Remover  do processo de rotulacao as imagens contidas no arquivo
 #TODO -> Colocar as figuras com acoes de click feito os Botoes  e incluir os contadores e classificadores dos com defeito
 #TODO -> Alterar os caminhos dos COM DEFEITO para aponta para fotos reais
