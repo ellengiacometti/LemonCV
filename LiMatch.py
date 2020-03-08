@@ -8,13 +8,10 @@ import pandas as pd
 import os
 import cv2
 from datetime import datetime
-
-
-def label_liso():
-    global liso, amostras,Sample,Rotulo
+def label_X():
+    global amostras,Sample,Rotulo,label,classified
     Sample.append(amostras[0])
-    Rotulo.append('L')
-    liso = liso + 1
+    Rotulo.append('X')
     if len(amostras) >1 :
         amostras.remove(amostras[0])
         # Sample file name
@@ -29,28 +26,90 @@ def label_liso():
         lima.set(nome_lima)
     else:
         messagebox.showinfo("Diretorio Vazio", "Todas as imagens foram classificadas :)")
+        SaveLabeledFile()
 
-
-
-
-def label_rugoso():
-    global rugoso, amostras,Sample,Rotulo
+def label_LS():
+    global amostras,Sample,Rotulo,label
     Sample.append(amostras[0])
-    Rotulo.append('R')
-    rugoso = rugoso + 1
+    Rotulo.append('LS')
     if len(amostras) >1 :
         amostras.remove(amostras[0])
+        # Sample file name
         nome_lima = amostras[0]
         # creating the first sample path
         path_Lima = path_train + "/" + nome_lima
         image_Lima = LoadImage(path_Lima,(600,600))
-        # Updating sample image
+        #Updating sample image
         panel_Lima.configure(image=image_Lima)
         panel_Lima.image = image_Lima
-        #Updating lima legend
+        # Updating lima legend
         lima.set(nome_lima)
     else:
         messagebox.showinfo("Diretorio Vazio", "Todas as imagens foram classificadas :)")
+        SaveLabeledFile()
+
+
+
+def label_LC():
+    global amostras,Sample,Rotulo,label
+    Sample.append(amostras[0])
+    Rotulo.append('LC')
+
+    if len(amostras) >1 :
+        amostras.remove(amostras[0])
+        # Sample file name
+        nome_lima = amostras[0]
+        # creating the first sample path
+        path_Lima = path_train + "/" + nome_lima
+        image_Lima = LoadImage(path_Lima,(600,600))
+        #Updating sample image
+        panel_Lima.configure(image=image_Lima)
+        panel_Lima.image = image_Lima
+        # Updating lima legend
+        lima.set(nome_lima)
+    else:
+        messagebox.showinfo("Diretorio Vazio", "Todas as imagens foram classificadas :)")
+        SaveLabeledFile()
+
+def label_RS():
+    global amostras,Sample,Rotulo,label
+    Sample.append(amostras[0])
+    Rotulo.append('RS')
+    if len(amostras) >1 :
+        amostras.remove(amostras[0])
+        # Sample file name
+        nome_lima = amostras[0]
+        # creating the first sample path
+        path_Lima = path_train + "/" + nome_lima
+        image_Lima = LoadImage(path_Lima,(600,600))
+        #Updating sample image
+        panel_Lima.configure(image=image_Lima)
+        panel_Lima.image = image_Lima
+        # Updating lima legend
+        lima.set(nome_lima)
+    else:
+        messagebox.showinfo("Diretorio Vazio", "Todas as imagens foram classificadas :)")
+        SaveLabeledFile()
+
+def label_RC():
+    global  amostras,Sample,Rotulo,label
+    Sample.append(amostras[0])
+    Rotulo.append('RC')
+    if len(amostras) >1 :
+        amostras.remove(amostras[0])
+        # Sample file name
+        nome_lima = amostras[0]
+        # creating the first sample path
+        path_Lima = path_train + "/" + nome_lima
+        image_Lima = LoadImage(path_Lima,(600,600))
+        #Updating sample image
+        panel_Lima.configure(image=image_Lima)
+        panel_Lima.image = image_Lima
+        # Updating lima legend
+        lima.set(nome_lima)
+    else:
+        messagebox.showinfo("Diretorio Vazio", "Todas as imagens foram classificadas :)")
+        SaveLabeledFile()
 
 
 
@@ -59,7 +118,7 @@ def on_closing():
     if arquivo_salvo==1:
             root.destroy()
     else:
-        if messagebox.askokcancel("Sair", "Tem certeza que deseja Sair sem salvar?"):
+        if messagebox.askokcancel("Sair", "Tem certeza que deseja SAIR SEM SALVAR?"):
             root.destroy()
 
 
@@ -93,9 +152,19 @@ def LoadImage(path,dim):
     image = ImageTk.PhotoImage(image)
     return image
 
-def CreatePanel(root,image,panel_x,panel_y,texto,legend_x,legend_y):
+def CreatePanel(root,image,panel_x,panel_y,texto,legend_x,legend_y,action):
     # Storing image
-    panel_default = Label(image=image, borderwidth=2, relief="solid")
+    if action=="LS":
+         panel_default = Button(image=image, borderwidth=2, relief="solid",command=label_LS)
+    elif action=="LC":
+        panel_default = Button(image=image, borderwidth=2, relief="solid", command=label_LC)
+    elif action=="RS":
+         panel_default = Button(image=image, borderwidth=2, relief="solid",command=label_RS)
+    elif action=="RC":
+        panel_default = Button(image=image, borderwidth=2, relief="solid", command=label_RC)
+    elif action=="X":
+        panel_default = Button(image=image, borderwidth=2, relief="solid", command=label_X)
+
     panel_default.image = image
     panel_default.pack(padx=10, pady=10)
     panel_default.place(x=panel_x, y=panel_y)
@@ -106,14 +175,34 @@ def CreatePanel(root,image,panel_x,panel_y,texto,legend_x,legend_y):
     legend_panel_default.place(x=legend_x, y=legend_y)
 
 def LoadPreviousLabeledFile():
+    global nome_lima,amostras,path_train
     filename = filedialog.askopenfilename( title = "Selecione o arquivo com a rotulacao",filetypes = (("CSV Files","*.csv"),))
     try:
-        labeled_list= pd.read_csv(filename)
+        labeled_list= pd.read_csv(filename,sep=";")
+        classified_SAMPLE=labeled_list["Sample"]
+        classified_ROTULO=labeled_list["Rotulo"]
+
+        if amostras is not None:
+            amostras= list(set(amostras).difference(set(classified_SAMPLE.values)))
+            for sample in classified_SAMPLE.values:
+                Sample.append(sample)
+            for rotulo in classified_ROTULO.values:
+                Rotulo.append(rotulo)
+            # Sample.append(classified_SAMPLE.values)
+            # Rotulo.append(classified_ROTULO.values)
+            nome_lima = amostras[0]
+            path_Lima = path_train + "/" + nome_lima
+            image_Lima = LoadImage(path_Lima, (600, 600))
+            # Updating sample image
+            panel_Lima.configure(image=image_Lima)
+            panel_Lima.image = image_Lima
+            # Updating lima legend
+            lima.set(nome_lima)
     except:
        messagebox.showerror(title='Erro ao carregar', message='Nao foi possivel carregar arquivo')
-
-    print(filename)
+    print("Diretorio carregado:",filename)
 def SaveLabeledFile():
+    global arquivo_salvo
     raw_data = {'Sample': Sample, 'Rotulo': Rotulo}
     df = pd.DataFrame(raw_data, columns=['Sample', 'Rotulo'])
     filename = filedialog.asksaveasfilename( defaultextension='.csv')
@@ -127,16 +216,15 @@ def SaveLabeledFile():
 
 
 '''Path dos modelos'''
-path_ModeloLiso = "/home/ellen/Imagens/Modelos/lemonMaduro.jpg"
-path_ModeloRugoso = "/home/ellen/Imagens/Modelos/lemonVerde.jpg"
+ROOT_DIR = os.path.abspath(os.curdir)
+path_ModeloLiso = os.path.join(ROOT_DIR,"Modelos/Modelo_LS.jpg")
+path_ModeloRugoso =os.path.join(ROOT_DIR, "Modelos/Modelo_RS.jpg")
+path_ModeloLisoDefeito =os.path.join(ROOT_DIR, "Modelos/Modelo_LC.jpg")
+path_ModeloRugosoDefeito =os.path.join(ROOT_DIR, "Modelos/Modelo_RC.jpg")
+path_X=os.path.join(ROOT_DIR, "Modelos/X.png")
 
-path_ModeloLisoDefeito = "/home/ellen/Imagens/Modelos/lemonMaduro.jpg"
-path_ModeloRugosoDefeito = "/home/ellen/Imagens/Modelos/lemonVerde.jpg"
 ''' Path das Limas '''
-# Test for end of sample's list
-#path_train = "/home/ellen/Imagens/Modelos/"
-
-path_train = "/home/ellen/Imagens/TRAIN1200-1200_SEMLABEL"
+path_train = os.path.join(ROOT_DIR, "SEMLABEL")
 
 '''Construcao GUI'''
 #Creating the GUI interface
@@ -155,7 +243,7 @@ root.config(menu=menubar)
 window(root)
 #Setting new global  panels to store  images
 global panel_ModeloLiso, panel_ModeloRugoso, panel_ModeloLisoDefeito, panel_ModeloRugosoDefeito,panel_Lima
-global amostras,index_lima,nome_lima,Rotulo,Sample,arquivo_salvo
+global amostras,index_lima,nome_lima,Rotulo,Sample,arquivo_salvo,classified
 
 Rotulo=[]
 Sample=[]
@@ -165,11 +253,7 @@ panel_ModeloLisoDefeito = None
 panel_ModeloRugosoDefeito = None
 panel_Lima =  None
 arquivo_salvo=0
-'''Inicializacao de variaveis'''
-liso=0
-rugoso=0
-
-
+classified= None
 '''Preenchendo o panel de amostras'''
 # List with all samples names
 amostras = os.listdir(path_train)
@@ -192,11 +276,14 @@ if len(path_ModeloLiso ) > 0 and len(path_ModeloRugoso)>0:
         '''Model image - Lima'''
         # load the image from disk
         image_Lima = LoadImage(path_ModeloLima,(600,600))
+        '''Model image -  Drop'''
+        image_X = LoadImage(path_X, (100, 100))
 
-        CreatePanel(root, image_Liso, 150, 50, 'LISO - SEM DEFEITO', 255, 40)
-        CreatePanel(root, image_Rugoso, 1250, 50, 'RUGOSO - SEM DEFEITO', 1350, 40)
-        CreatePanel(root,image_LisoDefeito,150,550,'LISO - COM DEFEITO',255,540)
-        CreatePanel(root, image_RugosoDefeito, 1250, 550, 'RUGOSO - COM DEFEITO', 1350, 540)
+        CreatePanel(root, image_Liso, 150, 50, 'LISO - SEM DEFEITO', 255, 40,action="LS")
+        CreatePanel(root, image_Rugoso, 1250, 50, 'RUGOSO - SEM DEFEITO', 1350, 40,action="RS")
+        CreatePanel(root,image_LisoDefeito,150,550,'LISO - COM DEFEITO',255,540,action="LC")
+        CreatePanel(root, image_RugosoDefeito, 1250, 550, 'RUGOSO - COM DEFEITO', 1350, 540,action="RC")
+        CreatePanel(root, image_X, 850, 825, 'INADEQUADO', 840, 935, action="X")
         # Storing image
         panel_Lima = Label(image=image_Lima,borderwidth=6, relief="solid")
         panel_Lima.image = image_Lima
@@ -210,22 +297,9 @@ if len(path_ModeloLiso ) > 0 and len(path_ModeloRugoso)>0:
         # otherwise, update the image panels
 else:
     print('Caminho das imagens modelo nao encontrado')
-myFont = font.Font(family='Helvetica',size=16,weight="bold")
-btn_Liso = Button(root, text="LISO", command=label_liso,height = 5, width = 30)
-btn_Liso['font']=myFont
-btn_Liso.pack(side="bottom", fill="none", expand=TRUE, padx="20", pady="20")
-btn_Liso.place(x=450,y=850)
-
-btn_Rugoso = Button(root, text="RUGOSO", command=label_rugoso,height = 5, width = 30)
-btn_Rugoso['font']=myFont
-btn_Rugoso.pack(side="bottom", fill="none", expand=TRUE, padx="20", pady="20")
-btn_Rugoso.place(x=900,y=850)
-
 root.protocol("WM_DELETE_WINDOW", on_closing)
 # kick off the GUI
 root.mainloop()
 
 
-#TODO -> Remover  do processo de rotulacao as imagens contidas no arquivo
-#TODO -> Colocar as figuras com acoes de click feito os Botoes  e incluir os contadores e classificadores dos com defeito
 #TODO -> Alterar os caminhos dos COM DEFEITO para aponta para fotos reais
